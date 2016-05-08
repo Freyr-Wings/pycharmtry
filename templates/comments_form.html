@@ -2,20 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <title>form</title>
+    <style>
+        .gap1,.gap2,.gap3,.gap0{
+            position:relative;
+            width:400px;
+            height:100px;
+            background-color: #999;
+            border-radius: 10px;
+            margin:20px 0px;
+            text-align: center;
+            opacity: 0.8;
+        }
+        .gap1{
+            left:20px;
+        }
+        .gap2{
+            left:40px;
+        }
+        .gap3{
+            left:60px;
+        }
+        .hidden{
+            display: none;
+        }
+        .cmtbtn{
+            display: block;
+            position:absolute;
+            bottom: 0px;
+            right:0px;
+        }
+        .commentarea{
+            height:50px;
+            width:300px;
+        }
+        @keyframes ani{
+            0%{height:0px}
+            100%{height:400px}
+        }
+    </style>
 </head>
 <body>
-<form method="post" action="" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" class="button" value="create comments" />
-</form>
-{% if errors %}
-    <ul>
-        {% for error in errors %}
-        <li>{{ error }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+<div id="comment"></div>
 </body>
+<script>
+    function load(){
+        var xhr=new XMLHttpRequest()
+        xhr.open("get","../detail")
+        xhr.onload=function(){
+            var comment=xhr.response
+            document.getElementById("comment").innerHTML=null
+            createcomment(comment)
+            for(var i=0;i<document.getElementsByClassName("cmtbtn").length;i++){
+                document.getElementsByClassName("cmtbtn")[i].onclick=function(){
+                    this.nextSibling.classList.toggle("hidden")
+                    this.nextSibling.nextSibling.classList.toggle("hidden")
+                }
+            }
+        }
+        xhr.send()
+    }
+    function createcomment(comment){
+        console.log('start')
+        var  json=JSON.parse(comment)
+        var key_before=-1
+        var gap_before=0
+        var cmtbtn="<span class='cmtbtn'>评论</span>"
+        var cmtarea="<textarea class='commentarea hidden' placeholder='comment......'></textarea><input type='submit' class='hidden' onclick='submit(event)'/>"
+        for (var key in json){
+            var  gap = ((key_before)-key+(gap_before)+2)
+            document.getElementById("comment").innerHTML=document.getElementById("comment").innerHTML+"<div "+"class=gap"+gap+" rv="+json[key][1]+">"+json[key][0]+cmtbtn+cmtarea+"</div>"
+            key_before=key
+            gap_before=gap
+        }
+    }
+    function submit(event){
+        var body={
+            comments:event.target.previousSibling.value,
+            right:event.target.parentNode.getAttribute("rv")
+        }
+        $(function () {    $.ajaxSetup({        headers: { "X-CSRFToken": getCookie("csrftoken") }    });});
+function getCookie(name) {     var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");     if(arr=document.cookie.match(reg))         return unescape(arr[2]);     else         return null; } 
+        $.ajax({
+            type:"post",
+            url:"../form/",
+            data:body,
+            success:function(){
+                load()
+            }
+        })
+        event.target.previousSibling.value=null
+        event.target.previousSibling.classList.toggle("hidden")
+    }
+    load()
+</script>
+
 </html>

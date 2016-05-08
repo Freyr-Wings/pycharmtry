@@ -6,7 +6,6 @@ import json
 
 
 def init_comment_form(request):
-    errors=[]
     form = PostCommentForm(request.POST or None)
     if form.is_valid():
         instance = form.save(commit=False)
@@ -21,32 +20,25 @@ def init_comment_form(request):
 
 
 def comment_form(request):
-    check=False
-    errors=[]
-    form=CommentForm(request.POST or None)
+    form = CommentForm(request.POST)
     if form.is_valid():
-        instance = form.save(commit=False)
         right = form.cleaned_data['right']
-        for i in Comment.objects.all():
-            if i.right == right:
-                check = True
-                break
-        if check:
-            for i in Comment.objects.all().order_by("-right"):
-                if i.right >= right:
-                    i.right += 2
-                if i.left > right:
-                    i.left += 2
-                i.save()
-            instance.left = int(right)
-            instance.right = int(right)+1
-            instance.save()
-            return HttpResponseRedirect('/pytry/detail/')
-        else:
-            errors.append("Enter the correct right value")
+        for i in Comment.objects.all().order_by("-right"):
+
+            if i.right >= right:
+                i.right += 2
+
+            if i.left > right:
+                i.left += 2
+            i.save()
+        instance = form.save(commit=False)
+        instance.left = int(right)
+        instance.right = int(right)+1
+        instance.save()
+        for i in Comment.objects.all().order_by('-right'):
+            print i.right
     context={
         "form": form,
-        "errors": errors,
     }
     return render(request, "comments_form.html", context)
 
@@ -55,10 +47,12 @@ def comment_detail(request):
     queryset_list = Comment.objects.all().order_by('-left')
     context = {}
     for i in queryset_list:
-        context[i.left]=i.comments
+        context[i.left]=[i.comments, i.right]
+        print context.items()
     jsonDumpsIndentStr = json.dumps(context)
     print "jsonDumpsIndentStr=",jsonDumpsIndentStr
-    return HttpResponse(jsonDumpsIndentStr, "comments_form.html")
+    return HttpResponse(jsonDumpsIndentStr)
+
 
 # def comment_response(request, right):
 #     form = CommentForm(request.POST or None)
