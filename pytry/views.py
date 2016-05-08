@@ -20,25 +20,32 @@ def init_comment_form(request):
 
 
 def comment_form(request):
-    form = CommentForm(request.POST)
+    check=False
+    errors=[]
+    form = CommentForm(request.POST or None)
     if form.is_valid():
-        right = form.cleaned_data['right']
-        for i in Comment.objects.all().order_by("-right"):
-
-            if i.right >= right:
-                i.right += 2
-
-            if i.left > right:
-                i.left += 2
-            i.save()
         instance = form.save(commit=False)
-        instance.left = int(right)
-        instance.right = int(right)+1
-        instance.save()
-        for i in Comment.objects.all().order_by('-right'):
-            print i.right
-    context={
+        right = form.cleaned_data['right']
+        for i in Comment.objects.all():
+            if i.right == right:
+                check = True
+                break
+        if check:
+            for i in Comment.objects.all().order_by("-right"):
+                if i.right >= right:
+                    i.right += 2
+                if i.left > right:
+                    i.left += 2
+                i.save()
+            instance.left = int(right)
+            instance.right = int(right)+1
+            instance.save()
+            return HttpResponseRedirect('/pytry/detail/')
+        else:
+            errors.append("Enter the correct right value")
+    context = {
         "form": form,
+        "errors": errors,
     }
     return render(request, "comments_form.html", context)
 
