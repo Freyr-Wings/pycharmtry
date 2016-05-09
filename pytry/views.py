@@ -1,4 +1,4 @@
-from django.shortcuts import render,Http404,HttpResponse,HttpResponseRedirect,redirect
+from django.shortcuts import render,Http404,HttpResponse,HttpResponseRedirect,redirect,get_object_or_404
 from .models import Comment
 from .forms import PostCommentForm, CommentForm
 import json
@@ -60,6 +60,24 @@ def comment_detail(request):
     print "jsonDumpsIndentStr=",jsonDumpsIndentStr
     return HttpResponse(jsonDumpsIndentStr)
 
+
+def delete_comment(request):
+    check=False
+    right=request.POST.get("right")
+    for i in Comment.objects.all():
+            if i.right == right:
+                check = True
+                break
+    if check:
+        for i in Comment.objects.all().order_by("-right"):
+            if i.right == right:
+                i.delete()
+            if i.right >= right:
+                i.right -= 2
+            if i.left > right:
+                i.left -= 2
+            i.save()
+    return HttpResponse("success")
 
 # def comment_response(request, right):
 #     form = CommentForm(request.POST or None)

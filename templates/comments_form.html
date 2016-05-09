@@ -89,8 +89,18 @@
             comments:event.target.previousSibling.value,
             right:event.target.parentNode.getAttribute("rv")
         }
-        $(function () {    $.ajaxSetup({        headers: { "X-CSRFToken": getCookie("csrftoken") }    });});
-function getCookie(name) {     var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");     if(arr=document.cookie.match(reg))         return unescape(arr[2]);     else         return null; } 
+        $(function(){
+            $.ajaxSetup({
+                headers: { "X-CSRFToken": getCookie("csrftoken") }
+            });
+        });
+        function getCookie(name){
+            var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+            if(arr=document.cookie.match(reg))
+                return decodeURI(arr[2]);
+            else
+                return null;
+        }
         $.ajax({
             type:"post",
             url:"../form/",
