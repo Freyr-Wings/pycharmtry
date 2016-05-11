@@ -1,6 +1,7 @@
 from django.shortcuts import render,Http404,HttpResponse,HttpResponseRedirect,redirect,get_object_or_404
 from .models import Comment
 from .forms import PostCommentForm, CommentForm
+from django.utils.html import escape
 import json
 # Create your views here.
 
@@ -25,6 +26,7 @@ def comment_form(request):
     form = CommentForm(request.POST or None)
     if form.is_valid():
         instance = form.save(commit=False)
+        instance.comments = escape(instance.comments)
         right = form.cleaned_data['right']
         for i in Comment.objects.all():
             if i.right == right:
