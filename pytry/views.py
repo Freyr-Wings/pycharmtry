@@ -64,19 +64,23 @@ def comment_detail(request):
 def delete_comment(request):
     check=False
     right=request.POST.get("right")
+    left=request.POST.get("left")
+    total = int(right)-int(left)+1
     for i in Comment.objects.all():
-            if i.right == right:
-                check = True
-                break
+            if i.right == int(right):
+                if i.left == int(left):
+                    check = True
+                    break
     if check:
         for i in Comment.objects.all().order_by("-right"):
-            if i.right == right:
+            if i.right <= int(right) and i.left >= int(left):
                 i.delete()
-            if i.right >= right:
-                i.right -= 2
-            if i.left > right:
-                i.left -= 2
-            i.save()
+            else:
+                if i.right >= int(right):
+                    i.right -= total
+                if i.left > int(right):
+                    i.left -= total
+                i.save()
     return HttpResponse("success")
 
 # def comment_response(request, right):

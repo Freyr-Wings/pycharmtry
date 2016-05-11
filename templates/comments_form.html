@@ -24,6 +24,9 @@
         .gap3{
             left:60px;
         }
+        .gap4{
+            left:80px;
+        }
         .hidden{
             display: none;
         }
@@ -33,24 +36,19 @@
             bottom: 0px;
             right:0px;
         }
+        .delbtn{
+            display: block;
+            position:absolute;
+            bottom: 0px;
+            right:50px;
+        }
         .commentarea{
             height:50px;
             width:300px;
         }
-        @keyframes ani{
-            0%{height:0px}
-            100%{height:400px}
-        }
     </style>
 </head>
 <body>
-{% if errors %}
-    <ul>
-        {% for error in errors %}
-        <li>{{ error }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
 <div id="comment"></div>
 </body>
 <script>
@@ -66,6 +64,7 @@
                     this.nextSibling.classList.toggle("hidden")
                     this.nextSibling.nextSibling.classList.toggle("hidden")
                 }
+                document.getElementsByClassName("delbtn")[i].onclick=function(){deletecomment(event)}
             }
         }
         xhr.send()
@@ -76,10 +75,11 @@
         var key_before=-1
         var gap_before=0
         var cmtbtn="<span class='cmtbtn'>评论</span>"
+        var delbtn="<span class='delbtn'>删除</span>"
         var cmtarea="<textarea class='commentarea hidden' placeholder='comment......'></textarea><input type='submit' class='hidden' onclick='submit(event)'/>"
         for (var key in json){
             var  gap = ((key_before)-key+(gap_before)+2)
-            document.getElementById("comment").innerHTML=document.getElementById("comment").innerHTML+"<div "+"class=gap"+gap+" rv="+json[key][1]+">"+json[key][0]+cmtbtn+cmtarea+"</div>"
+            document.getElementById("comment").innerHTML=document.getElementById("comment").innerHTML+"<div "+"class=gap"+gap+" rv="+json[key][1]+" lv="+key+">"+json[key][0]+cmtbtn+cmtarea+delbtn+"</div>"
             key_before=key
             gap_before=gap
         }
@@ -88,19 +88,7 @@
         var body={
             comments:event.target.previousSibling.value,
             right:event.target.parentNode.getAttribute("rv")
-        }
-        $(function(){
-            $.ajaxSetup({
-                headers: { "X-CSRFToken": getCookie("csrftoken") }
-            });
-        });
-        function getCookie(name){
-            var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
-            if(arr=document.cookie.match(reg))
-                return decodeURI(arr[2]);
-            else
-                return null;
-        }
+        } 
         $.ajax({
             type:"post",
             url:"../form/",
@@ -112,6 +100,21 @@
         event.target.previousSibling.value=null
         event.target.previousSibling.classList.toggle("hidden")
     }
+    function deletecomment(event){
+        $.ajax({
+            type:"post",
+            url:"../delete/",
+            data:{
+                left:event.target.parentNode.getAttribute("lv"),
+                right:event.target.parentNode.getAttribute("rv")
+            },
+            success:function(){
+                load()
+            }
+        })
+    }
+    $(function () {    $.ajaxSetup({        headers: { "X-CSRFToken": getCookie("csrftoken") }    });});
+function getCookie(name) {     var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");     if(arr=document.cookie.match(reg))         return unescape(arr[2]);     else         return null; }
     load()
 </script>
 
